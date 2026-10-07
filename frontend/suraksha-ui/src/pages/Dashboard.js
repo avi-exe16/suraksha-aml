@@ -11,23 +11,34 @@ const Dashboard = () => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        loadData();
+        loadData(true); // initial load shows loading spinner
+
+        const interval = setInterval(() => {
+            loadData(false); // background polling runs silently
+        }, 4000);
+
+        return () => clearInterval(interval);
     }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const loadData = async () => {
+    const loadData = async (isInitial = false) => {
         try {
-            setLoading(true);
+            if (isInitial) setLoading(true);
             const [statsData, txnData] = await Promise.all([
                 fetchDashboardStats(),
                 fetchTransactions(100, filter),
             ]);
-            setStats(statsData);
-            setTransactions(txnData.transactions);
+            setStats(statsData?.data || statsData);
+            
+            const txns = Array.isArray(txnData) 
+                ? txnData 
+                : (txnData?.transactions || txnData?.data || []);
+            setTransactions(txns);
             setError(null);
         } catch (err) {
-            setError('Failed to load data. Ensure the backend is running on port 8000.');
+            console.error("Dashboard Load Error:", err);
+            setError('Failed to load data. Ensure the backend is running.');
         } finally {
-            setLoading(false);
+            if (isInitial) setLoading(false);
         }
     };
 

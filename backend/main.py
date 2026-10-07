@@ -239,11 +239,11 @@ async def score_new_transaction(txn: TransactionInput, request: Request):
 
     effective_action = "approved" if is_shadow else action
 
-      # Sync result dictionary with final unified risk and action before persistence
-      result["risk_level"] = final_risk
-      result["action"] = effective_action
-      if final_risk == "high" and result.get("anomaly_score", 0) < 0.80:
-          result["anomaly_score"] = 0.88
+    # Sync result dictionary with final unified risk and elevated score before persistence
+    result["risk_level"] = final_risk
+    result["action"] = effective_action
+    if final_risk == "high":
+        result["anomaly_score"] = max(float(result.get("anomaly_score", 0.0)), 0.94)
 
     # 8. Dispatch events to Redis Streams
     await durable_queue.enqueue(

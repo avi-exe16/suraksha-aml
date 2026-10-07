@@ -14,8 +14,8 @@ from config import (
 logger = logging.getLogger("suraksha.scorer")
 
 # Consistent min/max empirical bounds for Isolation Forest decision_function
-ISO_MIN_SCORE: float = -0.5
-ISO_MAX_SCORE: float = 0.5
+ISO_MIN_SCORE: float = -0.25
+ISO_MAX_SCORE: float = 0.25
 
 
 class FraudScoringEngine:

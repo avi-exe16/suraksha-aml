@@ -1,7 +1,7 @@
 import React from 'react';
 
 const RiskBadge = ({ riskLevel, level, score }) => {
-    const currentRisk = (riskLevel || level || "low").toLowerCase();
+    let currentRisk = (riskLevel || level || (score >= 0.8 ? "high" : score >= 0.5 ? "medium" : "low")).toLowerCase();
     const styles = {
         high: {
             background: '#fee2e2',

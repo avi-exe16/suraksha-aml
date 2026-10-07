@@ -87,9 +87,14 @@ ALLOWED_ORIGINS = os.getenv(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "https://*.vercel.app",
+        # add your production frontend domain here if you have a custom one
+    ],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 

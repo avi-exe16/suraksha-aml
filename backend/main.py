@@ -90,9 +90,11 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:5173",
-        "https://*.vercel.app",
-        # add your production frontend domain here if you have a custom one
+        "http://127.0.0.1:3000",
+        "https://suraksha-aml.vercel.app",
+        "https://suraksha.vercel.app",
     ],
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

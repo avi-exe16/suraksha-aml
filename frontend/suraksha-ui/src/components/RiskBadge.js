@@ -1,6 +1,7 @@
 import React from 'react';
 
-const RiskBadge = ({ riskLevel, score }) => {
+const RiskBadge = ({ riskLevel, level, score }) => {
+    const currentRisk = (riskLevel || level || "low").toLowerCase();
     const styles = {
         high: {
             background: '#fee2e2',
@@ -25,8 +26,8 @@ const RiskBadge = ({ riskLevel, score }) => {
         low: 'Low Risk',
     };
 
-    const style = styles[riskLevel] || styles.low;
-    const label = labels[riskLevel] || 'Low Risk';
+    const style = styles[currentRisk] || styles.low;
+    const label = labels[currentRisk] || 'Low Risk';
 
     return (
         <span style={{

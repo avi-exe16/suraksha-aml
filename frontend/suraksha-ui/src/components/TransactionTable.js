@@ -107,7 +107,7 @@ const TransactionTable = ({ transactions, loading }) => {
                                     {txn.channel || 'UPI'}
                                 </td>
                                 <td style={{ padding: '12px 16px' }}>
-                                    <RiskBadge level={riskLevel} />
+                                    <RiskBadge riskLevel={riskLevel} score={score} />
                                 </td>
                                 <td style={{ padding: '12px 16px', color: '#374151', fontWeight: '500' }}>
                                     {(score * 100).toFixed(1)}%

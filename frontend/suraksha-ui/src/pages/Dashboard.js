@@ -75,31 +75,31 @@ const Dashboard = () => {
             )}
 
             <div style={{ display: 'flex', gap: '16px', marginBottom: '28px', flexWrap: 'wrap' }}>
-                <StatsCard
-                    title="Total Transactions"
-                    value={stats ? stats.total_transactions.toLocaleString('en-IN') : '...'}
-                    subtitle="Last 90 days"
-                    color="blue"
-                />
-                <StatsCard
-                    title="High Risk Blocked"
-                    value={stats ? stats.high_risk.toLocaleString('en-IN') : '...'}
-                    subtitle={stats ? `${stats.fraud_rate}% fraud rate` : '...'}
-                    color="red"
-                />
-                <StatsCard
-                    title="Under Review"
-                    value={stats ? stats.medium_risk.toLocaleString('en-IN') : '...'}
-                    subtitle="Step-up auth triggered"
-                    color="yellow"
-                />
-                <StatsCard
-                    title="Amount Protected"
-                    value={stats ? formatCurrency(stats.amount_saved) : '...'}
-                    subtitle="Fraud value intercepted"
-                    color="green"
-                />
-            </div>
+    <StatsCard
+        title="Total Transactions"
+        value={stats ? (stats.total_transactions?.toLocaleString('en-IN') ?? '0') : '...'}
+        subtitle="Last 90 days"
+        color="blue"
+    />
+    <StatsCard
+        title="High Risk Blocked"
+        value={stats ? (stats.high_risk?.toLocaleString('en-IN') ?? '0') : '...'}
+        subtitle={stats ? `${stats.fraud_rate ?? 0}% fraud rate` : '...'}
+        color="red"
+    />
+    <StatsCard
+        title="Under Review"
+        value={stats ? (stats.medium_risk?.toLocaleString('en-IN') ?? '0') : '...'}
+        subtitle="Step-up auth triggered"
+        color="yellow"
+    />
+    <StatsCard
+        title="Amount Protected"
+        value={stats ? formatCurrency(stats.amount_saved ?? 0) : '...'}
+        subtitle="Fraud value intercepted"
+        color="green"
+    />
+</div>
 
             <div style={{
                 background: '#ffffff',

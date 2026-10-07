@@ -36,6 +36,7 @@ const TransactionTable = ({ transactions, loading }) => {
     };
 
     const formatTime = (timestamp) => {
+        if (!timestamp) return '-';
         return new Date(timestamp).toLocaleString('en-IN', {
             day: '2-digit',
             month: 'short',

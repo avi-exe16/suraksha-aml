@@ -46,6 +46,11 @@ const TransactionTable = ({ transactions, loading }) => {
         });
     };
 
+    const handleDownloadStr = (e, txnId) => {
+        e.stopPropagation(); // Prevents triggering the row click navigation
+        window.open(`https://suraksha-aml.onrender.com/transactions/${txnId}/report`, '_blank');
+    };
+
     return (
         <div style={{ overflowX: 'auto' }}>
             <table style={{
@@ -55,7 +60,7 @@ const TransactionTable = ({ transactions, loading }) => {
             }}>
                 <thead>
                     <tr style={{ background: '#f9fafb', borderBottom: '2px solid #e5e7eb' }}>
-                        {['Transaction ID', 'User ID', 'Amount', 'City', 'Category', 'Risk Level', 'Score', 'Time'].map((header) => (
+                        {['Transaction ID', 'User ID', 'Amount', 'Channel', 'Risk Level', 'Score', 'Time', 'Compliance Action'].map((header) => (
                             <th key={header} style={{
                                 padding: '12px 16px',
                                 textAlign: 'left',
@@ -72,43 +77,68 @@ const TransactionTable = ({ transactions, loading }) => {
                 </thead>
                 <tbody>
                     {transactions.map((txn, index) => {
-                        const riskLevel = getRiskLevel(txn.anomaly_score);
+                        const score = txn.anomaly_score ?? 0;
+                        const riskLevel = txn.risk_level || getRiskLevel(score);
+                        const isFlagged = riskLevel === 'high' || riskLevel === 'medium';
+
                         return (
                             <tr
-                                key={txn.txn_id}
+                                key={txn.txn_id || index}
                                 onClick={() => navigate(`/transaction/${txn.txn_id}`)}
                                 style={{
                                     borderBottom: '1px solid #f3f4f6',
                                     cursor: 'pointer',
-                                    background: index % 2 === 0 ? '#ffffff' : '#fafafa',
-                                    transition: 'background 0.15s',
+                                    transition: 'background-color 0.15s ease',
+                                    backgroundColor: index % 2 === 0 ? '#ffffff' : '#fafafa',
                                 }}
-                                onMouseEnter={(e) => e.currentTarget.style.background = '#f0f9ff'}
-                                onMouseLeave={(e) => e.currentTarget.style.background = index % 2 === 0 ? '#ffffff' : '#fafafa'}
+                                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f0fdf4')}
+                                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#ffffff' : '#fafafa')}
                             >
-                                <td style={{ padding: '12px 16px', color: '#2563eb', fontWeight: '500' }}>
+                                <td style={{ padding: '12px 16px', fontWeight: '600', color: '#111827' }}>
                                     {txn.txn_id}
                                 </td>
-                                <td style={{ padding: '12px 16px', color: '#374151' }}>
+                                <td style={{ padding: '12px 16px', color: '#4b5563' }}>
                                     {txn.user_id}
                                 </td>
-                                <td style={{ padding: '12px 16px', fontWeight: '600', color: '#111827' }}>
+                                <td style={{ padding: '12px 16px', fontWeight: '500', color: '#111827' }}>
                                     {formatAmount(txn.amount)}
                                 </td>
-                                <td style={{ padding: '12px 16px', color: '#374151' }}>
-                                    {txn.city}
-                                </td>
-                                <td style={{ padding: '12px 16px', color: '#374151', textTransform: 'capitalize' }}>
-                                    {txn.merchant_category}
+                                <td style={{ padding: '12px 16px', color: '#4b5563' }}>
+                                    {txn.channel || 'UPI'}
                                 </td>
                                 <td style={{ padding: '12px 16px' }}>
-                                    <RiskBadge riskLevel={riskLevel} score={txn.anomaly_score} />
+                                    <RiskBadge level={riskLevel} />
                                 </td>
-                                <td style={{ padding: '12px 16px', fontWeight: '600', color: riskLevel === 'high' ? '#ef4444' : riskLevel === 'medium' ? '#f59e0b' : '#22c55e' }}>
-                                    {(txn.anomaly_score * 100).toFixed(1)}%
+                                <td style={{ padding: '12px 16px', color: '#374151', fontWeight: '500' }}>
+                                    {(score * 100).toFixed(1)}%
                                 </td>
                                 <td style={{ padding: '12px 16px', color: '#6b7280', fontSize: '13px' }}>
-                                    {formatTime(txn.timestamp)}
+                                    {formatTime(txn.created_at || txn.timestamp)}
+                                </td>
+                                <td style={{ padding: '12px 16px' }}>
+                                    {isFlagged ? (
+                                        <button
+                                            onClick={(e) => handleDownloadStr(e, txn.txn_id)}
+                                            style={{
+                                                backgroundColor: riskLevel === 'high' ? '#fee2e2' : '#fef3c7',
+                                                color: riskLevel === 'high' ? '#991b1b' : '#92400e',
+                                                border: `1px solid ${riskLevel === 'high' ? '#f87171' : '#fcd34d'}`,
+                                                padding: '5px 10px',
+                                                borderRadius: '6px',
+                                                fontSize: '12px',
+                                                fontWeight: '600',
+                                                cursor: 'pointer',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '4px',
+                                            }}
+                                            title="Generate official FIU-IND report"
+                                        >
+                                            📄 Download STR
+                                        </button>
+                                    ) : (
+                                        <span style={{ color: '#9ca3af', fontSize: '12px' }}>Pass</span>
+                                    )}
                                 </td>
                             </tr>
                         );

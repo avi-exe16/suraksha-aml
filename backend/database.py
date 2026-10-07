@@ -302,18 +302,25 @@ async def get_risk_stats() -> Dict[str, Any]:
         high_stmt = select(func.count(TransactionRecord.id)).where(TransactionRecord.risk_level == "high")
         med_stmt = select(func.count(TransactionRecord.id)).where(TransactionRecord.risk_level == "medium")
         low_stmt = select(func.count(TransactionRecord.id)).where(TransactionRecord.risk_level == "low")
+        saved_stmt = select(func.sum(TransactionRecord.amount)).where(TransactionRecord.risk_level == "high")
 
         total = (await session.execute(total_stmt)).scalar() or 0
         high = (await session.execute(high_stmt)).scalar() or 0
         medium = (await session.execute(med_stmt)).scalar() or 0
         low = (await session.execute(low_stmt)).scalar() or 0
+        amount_saved = (await session.execute(saved_stmt)).scalar() or 0.0
+
+        fraud_rate = round((high / total) * 100, 2) if total > 0 else 0.0
 
         return {
+            "total_transactions": total,
             "total_scored": total,
             "high_risk": high,
             "medium_risk": medium,
             "low_risk": low,
-            "high_risk_pct": round((high / total) * 100, 2) if total > 0 else 0.0,
+            "fraud_rate": fraud_rate,
+            "high_risk_pct": fraud_rate,
+            "amount_saved": round(amount_saved, 2),
         }
 
 

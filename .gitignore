@@ -10,3 +10,7 @@ data/
 *.pdf  
 .ipynb_checkpoints/  
 backend/.env  
+data/  
+*.pdf  
+.ipynb_checkpoints/  
+backend/.env  

@@ -1,0 +1,54 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: suraksha_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: suraksha_admin
+      POSTGRES_PASSWORD: SurakshaSecure2026!
+      POSTGRES_DB: suraksha_aml
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    container_name: suraksha_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
+  backend:
+    build:
+      context: ./backend
+    container_name: suraksha_backend
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://suraksha_admin:SurakshaSecure2026!@postgres:5432/suraksha_aml
+      - SYNC_DATABASE_URL=postgresql://suraksha_admin:SurakshaSecure2026!@postgres:5432/suraksha_aml
+      - REDIS_URL=redis://redis:6379/0
+      - MODEL_DIR=/app/../models
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: suraksha_frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  redisdata:

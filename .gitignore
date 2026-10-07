@@ -1,0 +1,12 @@
+venv/  
+.venv/  
+__pycache__/  
+*.pyc  
+.env  
+node_modules/  
+.next/  
+dist/ 
+data/  
+*.pdf  
+.ipynb_checkpoints/  
+backend/.env  

@@ -123,7 +123,7 @@ const AdminPanel = () => {
     };
 
     const handleShadowToggle = async () => {
-        const res = await fetch('http://localhost:8000/shadow-mode/toggle', { method: 'POST' });
+        const res = await fetch('https://suraksha-aml.onrender.com/shadow-mode/toggle', { method: 'POST' });
         const data = await res.json();
         setShadowMode(data.shadow_mode);
         setShadowMessage(data.message);

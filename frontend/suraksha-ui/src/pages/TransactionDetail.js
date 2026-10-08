@@ -49,7 +49,7 @@ const TransactionDetail = () => {
         });
     };
 const handleDownloadReport = () => {
-        window.open(`http://localhost:8000/transactions/${txnId}/report`, '_blank');
+        window.open(`https://suraksha-aml.onrender.com/transactions/${txnId}/report`, '_blank');
     };
     const getRiskLevel = (score) => {
         if (score >= 0.8) return 'high';

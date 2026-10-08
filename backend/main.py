@@ -1,4 +1,4 @@
-import asyncio
+﻿import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
@@ -7,6 +7,7 @@ from typing import Any, Dict, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.responses import JSONResponse, Response
 from sqlalchemy import text
 
@@ -74,7 +75,17 @@ app = FastAPI(
     description="Enterprise transaction anomaly detection & statutory compliance system for Canara Bank",
     version="1.1.0",
     lifespan=lifespan,
+    docs_url=None,
 )
+
+@app.get('/docs', include_in_schema=False)
+async def custom_swagger_ui_html():
+    return get_swagger_ui_html(
+        openapi_url=app.openapi_url,
+        title=f'{app.title} - Swagger UI',
+        swagger_js_url='https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui-bundle.min.js',
+        swagger_css_url='https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui.min.css',
+    )
 
 # 1. OWASP Security Headers Middleware
 app.add_middleware(SecurityHeadersMiddleware)

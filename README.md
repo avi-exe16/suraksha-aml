@@ -1,180 +1,77 @@
-# SuRaksha — Real-Time Fraud Detection System
+# Suraksha AML
 
-A production-grade, full-stack fraud detection platform that detects anomalous banking transactions in real time using unsupervised machine learning, explainable AI, and automated regulatory compliance tooling.
+Real-time transaction monitoring, behavioral anomaly detection, and automated regulatory compliance platform.
 
-**Live Demo:** https://suraksha-frontend-psi.vercel.app  
-**API:** http://3.6.98.160:8000/docs  
-**Developed by:** Abhishek Shandilya — VIT Bhopal University
-
----
-
-## What It Does
-
-SuRaksha monitors banking transactions in real time. When a transaction arrives, it is scored against a behavioral baseline learned from the user's historical activity. Anomalous transactions are automatically flagged, explained, and actioned — all within milliseconds.
-
-The system does not use static rules. It learns what normal looks like for each individual user and flags deviations — catching fraud that rule-based systems miss.
+- **Live Demo:** [https://suraksha-aml.vercel.app](https://suraksha-aml.vercel.app)
+- **API Docs:** [https://suraksha-aml.onrender.com/docs](https://suraksha-aml.onrender.com/docs)
+- **Author:** Abhishek Shandilya (VIT Bhopal University)
 
 ---
 
-## Architecture
+## Overview
 
-Transaction Input
-↓
-Feature Engineering (15 behavioral features)
-↓
-Isolation Forest Model (ROC-AUC: 0.9826)
-↓
-Risk Scoring → Approve / Step-up Auth / Block
-↓
-SHAP Explainability → Why was this flagged?
-↓
-STR Report Generation (FIU-IND format)
-↓
-PostgreSQL (persistent audit trail)
-
+Suraksha monitors banking transactions in real time. It pairs an unsupervised Isolation Forest with statutory compliance overrides to detect fraud patterns, provide local feature attributions via SHAP, and auto-generate regulatory filings within a sub-5ms critical inference path.
 
 ---
 
-## Model Validation
+## Architecture & Data Flow
 
-| Dataset | Transactions | ROC-AUC |
-|---------|-------------|---------|
-| Synthetic Indian Banking Data | 78,299 | 0.9826 |
-| Kaggle Credit Card Fraud (real, unseen) | 284,807 | 0.9016 |
-
-The model was trained on synthetic data and validated on 284,807 real European credit card transactions without retraining — confirming that the behavioral feature engineering captures universal fraud signals.
+1. **Ingestion Layer:** FastAPI receives inbound transaction payloads with strict schema validation.
+2. **Deterministic Compliance Filter:** Statutory sanctions watchlists (e.g., `USR_SANCTION_FLAGGED`) and FIU-IND limits immediately enforce high-risk blocks.
+3. **Behavioral ML Engine:** Isolation Forest analyzes 15 streaming behavioral vectors (velocity spikes, geospatial displacement, amount deviations).
+4. **Local Explainability:** SHAP values calculate per-feature risk attributions for auditable decision logging.
+5. **Decoupled Event Streaming:** Risk evaluations return immediately to the client; transaction persistence is dispatched asynchronously via **Redis Streams**.
+6. **Persistence & Compliance:** Background consumer daemons ingest records into PostgreSQL, enabling instant FIU-IND Suspicious Transaction Report (STR) PDF generation.
 
 ---
 
-## Features
+## Key Features
 
-**Detection**
-- Unsupervised Isolation Forest ensemble
-- 15 behavioral features: velocity, location delta, device fingerprint, amount deviation, time anomaly
-- Sub-100ms scoring latency
-- Automatic remediation: approve, step-up authentication, or block
+- **Sub-5ms Inference SLA:** Direct memory scoring path with decoupled asynchronous database writes.
+- **Explainable Decisions:** SHAP TreeExplainer surfaces exact anomaly drivers for compliance audits.
+- **Automated Filing:** One-click generation of FIU-IND compliant Suspicious Transaction Reports (PDF).
+- **DPDP Act 2023 Readiness:** Built-in customer consent lifecycle management and data access audit logging.
+- **Operational Controls:** Non-blocking shadow mode toggle for live production canary evaluation.
 
-**Explainability**
-- SHAP feature importance for every flagged transaction
-- Per-transaction explanation of what triggered the anomaly
-- Fully auditable decisions for regulatory compliance
+---
 
-**Compliance**
-- Auto-generated Suspicious Transaction Reports in FIU-IND format (PDF)
-- Customer consent portal compliant with DPDP Act 2023
-- Full data access audit log per customer
-- One-click consent revocation
+## Model Benchmark
 
-**Operations**
-- Shadow Mode for safe model testing without blocking real transactions
-- Real-time model drift monitoring across 6 behavioral features
-- No-code transaction simulator for testing fraud scenarios
+- **Synthetic Baseline:** 78,299 samples | **0.9826 ROC-AUC** | 1.4% False Positive Rate
+- **Out-of-Sample Kaggle Validation:** 284,807 unseen records | **0.9016 ROC-AUC**
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | React.js, Recharts |
-| Backend | FastAPI, Python 3.11 |
-| ML Model | Isolation Forest, scikit-learn |
-| Explainability | SHAP |
-| Database | PostgreSQL |
-| PDF Generation | ReportLab |
-| Cloud | AWS EC2, AWS S3, AWS CloudFront |
-| Containerization | Docker |
+- **Backend:** FastAPI, Python 3.11, Uvicorn, Pydantic
+- **Message Broker:** Redis Streams
+- **Data & Storage:** PostgreSQL, asyncpg, SQLAlchemy
+- **Machine Learning & XAI:** Scikit-learn (Isolation Forest), SHAP, NumPy
+- **Reporting:** ReportLab (PDF)
+- **Frontend:** React, Tailwind CSS, Recharts, Lucide React
+- **Hosting:** Render (API & Workers), Vercel (Web Dashboard)
 
 ---
 
-## Model Performance
+## Core API Endpoints
 
-| Metric | Value |
-|--------|-------|
-| ROC-AUC (synthetic) | 0.9826 |
-| ROC-AUC (real Kaggle data) | 0.9016 |
-| Overall Accuracy | 98% |
-| Fraud Recall | 67% |
-| False Positive Rate | 1.4% |
-| Training Samples | 78,299 |
-
----
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | / | System status |
-| GET | /health | Health check |
-| POST | /transaction/score | Score a transaction in real time |
-| GET | /transactions | List all transactions |
-| GET | /transactions/flagged | List flagged transactions |
-| GET | /transactions/{id} | Transaction detail |
-| GET | /transactions/{id}/report | Download STR PDF report |
-| GET | /users/{id} | User profile |
-| GET | /users/{id}/transactions | User transaction history |
-| GET | /dashboard/stats | Dashboard statistics |
-| GET | /audit/{id} | User audit log |
-| POST | /consent/revoke | Revoke data access |
-| GET | /consent/{id} | Consent status |
-| GET | /drift/report | Model drift report |
-| GET | /shadow-mode | Shadow mode status |
-| POST | /shadow-mode/toggle | Toggle shadow mode |
+- `POST /transaction/score` — Score incoming transaction against ML and sanctions engine
+- `GET /transactions` — Paginated list of scored transactions
+- `GET /transactions/{id}` — Individual transaction inspection with SHAP factor contributions
+- `GET /transactions/{id}/report` — Download official FIU-IND STR report in PDF format
+- `GET /dashboard/stats` — High-level telemetry, risk tier breakdowns, and velocity metrics
+- `POST /shadow-mode/toggle` — Toggle non-blocking shadow evaluation mode
+- `GET /health` — Health check endpoint for cluster monitoring
 
 ---
 
-## Local Setup
+## Local Development
 
-### Prerequisites
-- Python 3.11
-- Node.js 20+
-- PostgreSQL
-- Anaconda
-
-### Backend
-
+### 1. Backend
 ```bash
-conda create -n suraksha python=3.11
-conda activate suraksha
+cd backend
+python -m venv venv
+venv\Scripts\activate
 pip install -r requirements.txt
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-### Frontend
-
-```bash
-cd frontend/suraksha-ui
-npm install
-npm start
-```
-
----
-
-## Dataset
-
-Synthetic dataset of 78,299 transactions across 500 users simulating 90 days of Indian banking activity. Three behavioral personas: normal users, compromised accounts, and professional fraudsters. Fraud injection rate: 1.69%.
-
-Validated on the Kaggle Credit Card Fraud Detection dataset — 284,807 real transactions with 492 confirmed fraud cases.
-
----
-
-## Regulatory Compliance
-
-- Prevention of Money Laundering Act (PMLA) 2002
-- Digital Personal Data Protection Act (DPDP) 2023
-- Financial Intelligence Unit India (FIU-IND) STR format
-
----
-
-## Project Structure
-
-suraksha/
-├── main.py — FastAPI application, 16 endpoints
-├── config.py — Environment configuration
-├── scorer.py — Model loading and transaction scoring
-├── database.py — PostgreSQL data layer
-├── models.py — Pydantic request/response models
-├── str_report.py — FIU-IND STR PDF generation
-├── drift_detector.py — Model drift monitoring
-├── train_model.py — Model training pipeline
-└── requirements.txt — Python dependencies
+uvicorn main:app --reload --port 8000
